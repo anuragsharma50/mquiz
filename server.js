@@ -26,9 +26,10 @@ io.on('connection', async (socket) => {
 
         // getRoom() function to get room details from DB
         // if no empty room is there create new else use from existing
-        const getRoom = async () => {   
+        const getRoom = async () => { 
+            let r;  
             try {
-                let r = await RoomModel.findOne({status: 'WAITING',count: {$in: [0,1]}});
+                r = await RoomModel.findOne({status: 'WAITING',count: {$in: [0,1]}});
                 if(!r) {
                     // fetching questions from api and storing them in db under room collection. 
                     const res = await fetch("https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple");
