@@ -9,57 +9,35 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     console.log("connection established");
     socket.score = 0;
 
-    let data = {
-        12 : {
-            id: 12,
-            question: "How are you?",
-            option1: "good",
-            option2: "theek",
-            option3: "mast",
-            option4: "aag",
-            ans: "good"
-        },
-        5 : {
-            id: 5,
-            question: "why are you?",
-            option1: "meri mazri",
-            option2: "pata nhi",
-            option3: "maksad",
-            option4: "sone",
-            ans: "sone"
-        },
-        14 : {
-            id: 14,
-            question: "where are you?",
-            option1: "here",
-            option2: "there",
-            option3: "somewhere",
-            option4: "nowhere",
-            ans: "here"
-        }
-    }
+    let data;   // data to store array of questions
+    let i = 0;  // i to traverse over data
 
-    let keys = Object.keys(data);
-    let i = 0;
+    socket.on("join", async (username) => {     // user will join room before playing game
+        socket.username = username;             // storing username for future reference
 
-    socket.on("join", async ({username}) => {
-        socket.username = username;
-        // socket.room = roomId;
-        // console.log({username,roomId});
-        // socket.join(roomId);
-
-        const getRoom = async () => {
+        // getRoom() function to get room details from DB
+        // if no empty room is there create new else use from existing
+        const getRoom = async () => {   
             let r = await RoomModel.findOne({status: 'WAITING',count: {$in: [0,1]}});
-            console.log("r",r);
             if(!r) {
-                r = new RoomModel();
+                // fetching questions from api and storing them in db under room collection. 
+                const res = await fetch("https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple");
+                let temp = await res.json();
+                data = temp.results;
+                r = new RoomModel({opponentName:username,questions:data});
             }
             else{
                 r.count++;
+                data = r.questions;
+            }
+
+            // update status if both player is available and we are starting game
+            if(r.count == 2){  
+                r.status = "PLAYING";
             }
             await r.save();
 
@@ -67,52 +45,85 @@ io.on('connection', (socket) => {
         }
 
         let room = await getRoom();
-        console.log(room);
 
         socket.room = room._id.toString();
-        // console.log({username,roomId:room._id});
         socket.join(socket.room);
-        // console.log(socket.id);
-
-        // const sockets = await io.in(socket.room).fetchSockets();
-        // console.log(sockets[0].client);
 
         if(room.count == 2){
-            let mcq = {...data[keys[i++]]};
-            delete mcq.ans;
-            mcq.room = room._id; 
-            console.log(mcq);
-    
+            let mcq = {...data[i]};
+            mcq.incorrect_answers.push(mcq.correct_answer);
+            mcq.incorrect_answers.sort();
+            delete mcq.correct_answer;  // delete ans before sending to FE
+            
+            // emit question to room (both players at same time)
             io.to(socket.room).emit("question", mcq);
-            // socket.broadcast.to(socket.room).emit("question", mcq);
+
+            // emit player1's name as opponent to player2 and visa versa
+            socket.broadcast.to(socket.room).emit("opponent_name", username);
+            socket.emit("opponent_name", room.opponentName);
         }
         else{
             socket.emit("wait","Waiting for opponent!!");
         }
     })
     
-    socket.on("ans",({id,ans}) => {
-        // console.log({id,ans});
-        if(data[id].ans === ans.toLowerCase()){
+    // ans will be emited by FE for each question
+    socket.on("ans", async ({ans}) => {
+        // compare ans from data's ans 
+        if(data[i].correct_answer === ans){
             socket.score += 10;
         }
-        // console.log(socket.score);
+
+        // increase i to go to next question
+        i++;
+
+        // emit my score to me as my_score and opponent as opponent_score
         socket.emit("my_score",socket.score);
         socket.broadcast.to(socket.room).emit("opponent_score",socket.score); 
 
-        if(i < keys.length){
-            let mcq = {...data[keys[i++]]};
-            delete mcq.ans;
-            // console.log(mcq);
+        // if i<5 means questions are pending
+        if(i < 5){
+            let mcq = {...data[i]};
+            mcq.incorrect_answers.push(mcq.correct_answer);
+            mcq.incorrect_answers.sort();
+            delete mcq.correct_answer;
             socket.emit("question", mcq);
+        }
+        else{
+            let room = await RoomModel.findById(socket.room);
+            let opponentScore = room.opponentScore;
+            // if opponentScore is not saved in DB means opponent is still playing
+            // so current player is first to finish, so store current player's score
+            if(!opponentScore && opponentScore !== 0){ 
+                room.opponentScore = socket.score;
+                await room.save();
+            }
+            else{
+                if(opponentScore < socket.score) {
+                    socket.emit("WIN");                             // you won
+                    socket.broadcast.to(socket.room).emit("LOST");  // opponent lost
+                }
+                else if(opponentScore == socket.score) {
+                    io.to(socket.room).emit("DRAW");
+                }
+                else{
+                    socket.emit("LOST");                             // you lost
+                    socket.broadcast.to(socket.room).emit("WIN");    // opponent won
+                }
+                console.log("game end");
+                await RoomModel.findByIdAndDelete(socket.room);     // delete room after game is done
+            }
         }
     })
 
     socket.on('disconnect', async () => {
         console.log("connection disconnected");
         if(socket.room) {
-            let t = await RoomModel.findByIdAndUpdate(socket.room, {$inc: {count:-1}},{ReturnsNewDoc: true});
-            console.log("t",t);
+            // check if it's fine to remove player from current room as game is not started
+            // if yes decrease count of player
+            // if game is started same score of player who left
+            await RoomModel.findOneAndUpdate({_id:socket.room,status:"WAITING"}, {$inc: {count:-1}},{ReturnsNewDoc: true});
+            await RoomModel.findOneAndUpdate({_id:socket.room,status:"PLAYING"}, { opponentScore: socket.score},{ReturnsNewDoc: true});
         }
     })
 })

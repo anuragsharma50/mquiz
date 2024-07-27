@@ -4,38 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MQuiz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./quiz.css">
 </head>
 <body>
-    <!-- <div class="scorecard">
-        <div class="score"><b>Anurag : </b><span id="my-score">20</span></div>
-        <div class="vs" >VS</div>
-        <div class="score"><b>Opponent : </b><span id="opponent-score">20</span></div>
+    <div class="lobby">
+        <input type="text" placeholder="Your Name" id="name-input" required>
+        <button id="play-button">Play</button>
     </div>
-    <div class="question-container">
-        <h1 class="question">Aaj ka mausam kaisa hai</h1>
-        <div class="options">
-            <div class="option" id="option-1">Barish</div>
-            <div class="option" id="option-2">Sunny</div>
-            <div class="option" id="option-3">Garmi</div>
-            <div class="option" id="option-4">Sardi</div>
-        </div>
-    </div> -->
 
-    <div class="scorecard">
-        <div class="score"><b id="username">Anurag </b> : <span id="my-score">0</span></div>
-        <div class="vs" >VS</div>
-        <div class="score"><b id="opponent-name">Opponent</b> : <span id="opponent-score">0</span></div>
+    <div class="wait-area">
+        <h1>Waiting for opponent to join...</h1>
     </div>
-    <!-- <div class="timer-container"><div class="timer"></div></div> -->
-    <div class="timeout">00:10</div>
-    <div class="question-container">
-        <h1 class="question">Aaj ka mausam kaisa hai</h1>
-        <div class="options">
-            <div class="option" id="option1">Barish</div>
-            <div class="option" id="option2">Sunny</div>
-            <div class="option" id="option3">Garmi</div>
-            <div class="option" id="option4">Sardi</div>
+
+    <div class="game">
+        <div class="scorecard">
+            <div class="score"><b id="username">Anurag</b> : <span id="my-score">0</span></div>
+            <div class="vs" >VS</div>
+            <div class="score"><b id="opponent-name">Opponent</b> : <span id="opponent-score">0</span></div>
+        </div>
+        <div class="timeout">00:10</div>
+        <div class="question-container">
+            <h1 class="question">Question</h1>
+            <div class="options">
+                <div class="option" id="option1">Option1</div>
+                <div class="option" id="option2">Option2</div>
+                <div class="option" id="option3">Option3</div>
+                <div class="option" id="option4">Option4</div>
+            </div>
+        </div>
+
+        <div class="status">
+            <h1 class="statusText">Congrulations, you Won!!</h1>
         </div>
     </div>
     

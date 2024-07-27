@@ -6,15 +6,11 @@ socket.on('connection', () => {
 
 })
 
-let username = "Anurag";
-let roomId = 101;
-let questionId = 0;
-let flag = false;
-// let timeout = 10;
-let timer;
-
-socket.emit("join",{username,roomId});
-
+const lobbyElement = document.querySelector(".lobby");
+const nameElement = document.querySelector("#name-input");
+const playButton = document.querySelector("#play-button");
+const waitAreaElement = document.querySelector(".wait-area");
+const gameElement = document.querySelector(".game");
 const qContainerElement = document.querySelector(".question-container");
 const questionElement = document.querySelector(".question");
 const optionsElement = document.querySelector(".options");
@@ -22,20 +18,44 @@ const option1Element1 = document.querySelector("#option1");
 const option1Element2 = document.querySelector("#option2");
 const option1Element3 = document.querySelector("#option3");
 const option1Element4 = document.querySelector("#option4");
+const usernameElement = document.querySelector("#username");
+const opponentNameElement = document.querySelector("#opponent-name");
 const myScoreElement = document.querySelector("#my-score");
 const opponentScoreElement = document.querySelector("#opponent-score");
 const timeoutElement = document.querySelector(".timeout");
+const statusElement = document.querySelector(".status");
+const statusTextElement = document.querySelector(".statusText");
+
+let flag = false;
+let timer;
+
+playButton.addEventListener('click',() => {
+    let username = nameElement.value;
+    if(username.trim() != ""){
+        usernameElement.innerHTML = username;
+        socket.emit("join",username);
+        lobbyElement.style.display = "none";
+        waitAreaElement.style.display = "flex";
+    }
+})
 
 socket.on("question", mcq => {
+
+    if(gameElement.style.display = "none") {
+        gameElement.style.display = "block";
+    }
+
+    if(waitAreaElement.style.display !== "none") {
+        waitAreaElement.style.display = "none";
+    }
+
     console.log(mcq);
     questionElement.innerHTML = mcq.question;
-    option1Element1.innerHTML = mcq.option1;
-    option1Element2.innerHTML = mcq.option2;
-    option1Element3.innerHTML = mcq.option3;
-    option1Element4.innerHTML = mcq.option4;
-    questionId = mcq.id;
+    option1Element1.innerHTML = mcq.incorrect_answers[0];
+    option1Element2.innerHTML = mcq.incorrect_answers[1];
+    option1Element3.innerHTML = mcq.incorrect_answers[2];
+    option1Element4.innerHTML = mcq.incorrect_answers[3];
     flag = true;
-    qContainerElement.style.visibility = "visible";
 
     clearInterval(timer);
     let timeout = 10;
@@ -43,20 +63,23 @@ socket.on("question", mcq => {
         timeout--;
         timeoutElement.innerHTML = `00:0${timeout}`;
         if(timeout == 0){
-            socket.emit("ans",{id:questionId,ans:""});
+            socket.emit("ans",{ans:""});
             clearInterval(timer);
         }
     },1000);
 })
 
 optionsElement.addEventListener("click", (e) => {
-    // console.log(e.target.className);
     if(e.target.className != "options" && flag) {
         flag = false;
         clearInterval(timer);
         console.log(e.target.innerHTML);
-        socket.emit("ans",{id:questionId,ans:e.target.innerHTML});
+        socket.emit("ans",{ans:e.target.innerHTML});
     }
+})
+
+socket.on("opponent_name", opponenetName => {
+    opponentNameElement.innerHTML = opponenetName;
 })
 
 socket.on("my_score", (myScore) => {
@@ -67,4 +90,26 @@ socket.on("my_score", (myScore) => {
 socket.on("opponent_score", (opponentScore) => {
     console.log("opponent score", opponentScore);
     opponentScoreElement.innerHTML = opponentScore;
+})
+
+const showStatus = (msg) => {
+    statusElement.style.display = "block";
+    statusTextElement.innerHTML = msg;
+    qContainerElement.style.display = "none";
+    timeoutElement.style.display = "none";
+}
+
+socket.on("WIN", () => {
+    showStatus("Congrulations, you Won!!");
+    console.log("You won");
+})
+
+socket.on("LOST", () => {
+    showStatus("Oops, you lost");
+    console.log("You lost");
+})
+
+socket.on("DRAW", () => {
+    showStatus("Well played, it's a draw");
+    console.log("Well played, it's a draw!!");
 })

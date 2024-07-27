@@ -9,7 +9,11 @@ const roomSchema = mongoose.Schema({
     count: {
         type: Number,
         default: 1
-    }
+    },
+    questions: Array,
+    opponentName: String,   // name of player who join first 
+    opponentScore: Number   // score of player who first complete or quit
+                            // opponentName and opponentScore can point at 2 different players
     // winner: {
         
     // }

@@ -4,6 +4,69 @@
     padding: 0;
 }
 
+body {
+    background-image: url("./assets/w6.jpg");
+    color: white;
+    font-family: "Raleway", sans-serif;
+}
+
+.lobby {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#name-input {
+    width: 400px;
+    height: 50px;
+    font-size: 24px;
+    padding: 8px;
+}
+
+#play-button {
+    width: 100px;
+    height: 50px;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 8px;
+    margin-left: 4px;
+}
+
+.wait-area,.status {
+    display: none;
+}
+
+.wait-area h1 {
+    text-align: center;
+    font-size: 48px;
+    color: white;
+    background-color: #00000073;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 8px;
+}
+
+.status h1 {
+    font-size: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 86vh;
+    padding: 8px;
+    text-align: center;
+}
+
+.game {
+    display: none;
+    background-color: #00000073;
+    height: 100vh;
+    padding: 8px;
+}
+
 .scorecard {
     display: flex;
     font-size: 22px;
@@ -24,28 +87,10 @@
     text-align: center;
 }
 
-.timer-container {
-    width: 660px;
-    height: 24px;
-    border: 2px solid;
-    /* background-color: limegreen; */
-    margin: auto;
-    border-radius: 8px;
-    margin-top: 32px;
-}
-
-.timer {
-    width: 100%;
-    background-color: limegreen;
-    height: 100%;
-    z-index: -1;
-    position: relative;
-}
-
 .timeout {
     font-size: 40px;
     border: 2px solid;
-    width: 100px;
+    width: 120px;
     text-align: center;
     margin: 24px auto 8px;
 }
@@ -55,11 +100,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    visibility: hidden;
+    /* visibility: hidden; */
 }
 
 .question {
-    color: #9b2b2b;
+    /* color: #9b2b2b; */
     margin: 24px;
 }
 
@@ -72,8 +117,8 @@
 }
 
 .option {
-    color: white;
-    background-color: #ff7b22;
+    /* color: white; */
+    /* background-color: #ff7b22; */
     padding: 16px 8px;
     font-size: 24px;
     font-weight: bold;
@@ -82,6 +127,8 @@
     width: 400px;
     text-align: center;
     cursor: pointer;
+    background-color: white;
+    color: black;
 }
 
 .option:hover {
