@@ -22,24 +22,28 @@ io.on('connection', async (socket) => {
         // getRoom() function to get room details from DB
         // if no empty room is there create new else use from existing
         const getRoom = async () => {   
-            let r = await RoomModel.findOne({status: 'WAITING',count: {$in: [0,1]}});
-            if(!r) {
-                // fetching questions from api and storing them in db under room collection. 
-                const res = await fetch("https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple");
-                let temp = await res.json();
-                data = temp.results;
-                r = new RoomModel({opponentName:username,questions:data});
+            try {
+                let r = await RoomModel.findOne({status: 'WAITING',count: {$in: [0,1]}});
+                if(!r) {
+                    // fetching questions from api and storing them in db under room collection. 
+                    const res = await fetch("https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple");
+                    let temp = await res.json();
+                    data = temp.results;
+                    r = new RoomModel({opponentName:username,questions:data});
+                }
+                else{
+                    r.count++;
+                    data = r.questions;
+                }
+    
+                // update status if both player is available and we are starting game
+                if(r.count == 2){  
+                    r.status = "PLAYING";
+                }
+                await r.save();
+            } catch (error) {
+                console.log("Something wen't wrong",error);
             }
-            else{
-                r.count++;
-                data = r.questions;
-            }
-
-            // update status if both player is available and we are starting game
-            if(r.count == 2){  
-                r.status = "PLAYING";
-            }
-            await r.save();
 
             return r;
         }
@@ -122,8 +126,12 @@ io.on('connection', async (socket) => {
             // check if it's fine to remove player from current room as game is not started
             // if yes decrease count of player
             // if game is started same score of player who left
-            await RoomModel.findOneAndUpdate({_id:socket.room,status:"WAITING"}, {$inc: {count:-1}},{ReturnsNewDoc: true});
-            await RoomModel.findOneAndUpdate({_id:socket.room,status:"PLAYING"}, { opponentScore: socket.score},{ReturnsNewDoc: true});
+            try {
+                await RoomModel.findOneAndUpdate({_id:socket.room,status:"WAITING"}, {$inc: {count:-1}},{ReturnsNewDoc: true});
+                await RoomModel.findOneAndUpdate({_id:socket.room,status:"PLAYING"}, { opponentScore: socket.score},{ReturnsNewDoc: true});
+            } catch (error) {
+                console.log("Something went wrong while updating status", error);
+            }
         }
     })
 })
