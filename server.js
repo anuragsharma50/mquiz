@@ -1,10 +1,15 @@
 import express from "express";
 import http from "http";
+import cors from "cors";
 import {Server} from "socket.io";
 import {RoomModel} from "./src/room.schema.js";
 
 const app = express();
-export const server = http.createServer(app);
+export const server = http.createServer(app,{
+    cors: {
+        origin: "*",
+    }
+});
 const io = new Server(server);
 
 app.use(express.static("public"));
