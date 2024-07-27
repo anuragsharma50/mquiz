@@ -1,5 +1,6 @@
 
-const socket = io.connect("http://localhost:8000");
+// const socket = io.connect("http://localhost:8000");
+const socket = io.connect("https://mquiz.onrender.com");
 
 socket.on('connection', () => {
     console.log("connected to the server");
