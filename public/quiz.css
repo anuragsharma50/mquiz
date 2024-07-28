@@ -20,6 +20,7 @@ body {
 #name-input {
     width: 400px;
     height: 50px;
+    max-width: 65%;
     font-size: 24px;
     padding: 8px;
 }
@@ -63,7 +64,7 @@ body {
 .game {
     display: none;
     background-color: #00000073;
-    height: 100vh;
+    min-height: 100vh;
     padding: 8px;
 }
 
@@ -117,8 +118,6 @@ body {
 }
 
 .option {
-    /* color: white; */
-    /* background-color: #ff7b22; */
     padding: 16px 8px;
     font-size: 24px;
     font-weight: bold;
@@ -129,8 +128,30 @@ body {
     cursor: pointer;
     background-color: white;
     color: black;
+    max-width: 80%;
 }
 
 .option:hover {
     background-color: #7fbf55;
 }
+
+@media only screen and (max-width: 600px) {
+    .scorecard {
+        font-size: 16px;
+        margin: 8px;
+    }
+
+    .vs {
+        margin: 0 8px;
+    }
+
+    .score{
+        width: auto;
+        padding: 8px;
+    }
+
+    .question {
+        font-size: 24px;
+    }
+}
+

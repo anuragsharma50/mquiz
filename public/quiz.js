@@ -30,10 +30,15 @@ const statusTextElement = document.querySelector(".statusText");
 let flag = false;
 let timer;
 
+nameElement.value = localStorage.getItem("username") || "";
+
 playButton.addEventListener('click',() => {
     let username = nameElement.value;
     if(username.trim() != ""){
         usernameElement.innerHTML = username;
+        if(username !== localStorage.getItem("username")){
+            localStorage.setItem("username", username);
+        }
         socket.emit("join",username);
         lobbyElement.style.display = "none";
         waitAreaElement.style.display = "flex";
@@ -50,7 +55,6 @@ socket.on("question", mcq => {
         waitAreaElement.style.display = "none";
     }
 
-    console.log(mcq);
     questionElement.innerHTML = mcq.question;
     option1Element1.innerHTML = mcq.incorrect_answers[0];
     option1Element2.innerHTML = mcq.incorrect_answers[1];
@@ -74,7 +78,6 @@ optionsElement.addEventListener("click", (e) => {
     if(e.target.className != "options" && flag) {
         flag = false;
         clearInterval(timer);
-        console.log(e.target.innerHTML);
         socket.emit("ans",{ans:e.target.innerHTML});
     }
 })
@@ -84,12 +87,10 @@ socket.on("opponent_name", opponenetName => {
 })
 
 socket.on("my_score", (myScore) => {
-    console.log("My score", myScore)
     myScoreElement.innerHTML = myScore;
 })
 
 socket.on("opponent_score", (opponentScore) => {
-    console.log("opponent score", opponentScore);
     opponentScoreElement.innerHTML = opponentScore;
 })
 
@@ -100,17 +101,18 @@ const showStatus = (msg) => {
     timeoutElement.style.display = "none";
 }
 
+socket.on("WAIT", () => {
+    showStatus("Waiting for opponent to finish");
+})
+
 socket.on("WIN", () => {
     showStatus("Congrulations, you Won!!");
-    console.log("You won");
 })
 
 socket.on("LOST", () => {
     showStatus("Oops, you lost");
-    console.log("You lost");
 })
 
 socket.on("DRAW", () => {
     showStatus("Well played, it's a draw");
-    console.log("Well played, it's a draw!!");
 })

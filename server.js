@@ -105,6 +105,7 @@ io.on('connection', async (socket) => {
             // if opponentScore is not saved in DB means opponent is still playing
             // so current player is first to finish, so store current player's score
             if(!opponentScore && opponentScore !== 0){ 
+                socket.emit("WAIT");
                 room.opponentScore = socket.score;
                 await room.save();
             }
